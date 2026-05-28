@@ -1,0 +1,44 @@
+version: "1.0"
+project: "sockshop-chaos-demo"
+
+controller:
+  url: "http://localhost:5050"
+  timeout_seconds: 300
+
+thresholds:
+  latency_regression_percent: 50
+  max_5xx_rate_percent: 10
+  max_payload_crash_rate_percent: 0
+
+services:
+  - name: front-end
+    probe_url: "http://front-end:8079/"
+
+  - name: carts
+    probe_url: "http://carts/health"
+
+  - name: orders
+    probe_url: "http://orders/health"
+
+tests:
+  - id: "latency-frontend"
+    type: latency
+    target: front-end
+    params:
+      delay_ms: 2000
+      num_requests: 5
+    on_fail: block
+
+  - id: "latency-orders"
+    type: latency
+    target: orders
+    params:
+      delay_ms: 3000
+      num_requests: 5
+    on_fail: warn
+
+report:
+  output_path: "chaos-report.html"
+  json_path: "chaos-report.json"
+  ai_summary: true
+  fail_on: "block"
